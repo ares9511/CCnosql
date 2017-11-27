@@ -24,10 +24,11 @@
       };
 
       firebase.initializeApp(config);
-      var database = firebase.database();
+      //var database = firebase.database();
 
       function writeData() {
       	for (var i = 0 ; i < fincas.length; i++) {
+			//alert(fincas.length);
 	        firebase.database().ref('fincas/'+fincas[i].nombre).set({
             finca_propietario: fincas[i].propietario,
          	finca_extension: fincas[i].extension,
@@ -41,15 +42,109 @@
       }
 	  
 	  function init(){
+		//alert("Init");
 		var fincasRef = firebase.database().ref();
 		fincasRef.on('value', function(snapshot) {
 			var f = snapshot.val();
-			var a = "";
+			
+			var nuevaFinca = null;
+            var propietario = "";
+            var extension = "";
+            var ubicacion = "";
+			
+			var nuevoObrero = null;
+			var nombre = "";
+			var feccon = "";
+			var tiecon = "";
+			var sueldo = "";
+			
+			var nuevoAnimal = null;
+			var tipo = "";
+			var cantidad = "";
+			
+			var nuevoCultivo = null;
+			var tipo_cultivo = "";
+	        var extension_cultivo = "";
+	        var cocecha = "";
+			
 			console.log(f.fincas);
 			for (var i in f.fincas) {
-				a = a + i;
+				propietario = "";
+				extension = "";
+				ubicacion = "";
+				if (f.fincas[i].hasOwnProperty('finca_propietario')) {
+					propietario = f.fincas[i].finca_propietario;
+				}
+				if (f.fincas[i].hasOwnProperty('finca_extension')){
+					extension = f.fincas[i].finca_extension;
+				}
+				if (f.fincas[i].hasOwnProperty('finca_ubicacion')){
+					ubicacion = f.fincas[i].finca_ubicacion;
+				}
+				nuevaFinca = new finca (i,propietario,extension,ubicacion);
+				
+				if (f.fincas[i].hasOwnProperty('finca_obreros')){
+					for (var j in f.fincas[i].finca_obreros) {
+						nombre = "";
+						feccon = "";
+						tiecon = "";
+						sueldo = "";
+						if (f.fincas[i].finca_obreros[j].hasOwnProperty('nombre')) {
+							nombre = f.fincas[i].finca_obreros[j].nombre;
+						}
+						if (f.fincas[i].finca_obreros[j].hasOwnProperty('feccon')) {
+							feccon = f.fincas[i].finca_obreros[j].feccon;
+						}
+						if (f.fincas[i].finca_obreros[j].hasOwnProperty('tiecon')) {
+							tiecon = f.fincas[i].finca_obreros[j].tiecon;
+						}
+						if (f.fincas[i].finca_obreros[j].hasOwnProperty('sueldo')) {
+							sueldo = f.fincas[i].finca_obreros[j].sueldo;
+						}
+						nuevoObrero = new obrero (nombre,feccon,tiecon,sueldo);
+						nuevaFinca.obreros.push(nuevoObrero);
+					}
+				}
+				
+				if (f.fincas[i].hasOwnProperty('finca_animales')){
+					for (var j in f.fincas[i].finca_animales) {
+						tipo = "";
+						cantidad = "";
+						if (f.fincas[i].finca_animales[j].hasOwnProperty('tipo')) {
+							tipo = f.fincas[i].finca_animales[j].tipo;
+						}
+						if (f.fincas[i].finca_animales[j].hasOwnProperty('cantidad')) {
+							cantidad = f.fincas[i].finca_animales[j].cantidad;
+						}
+						nuevoAnimal = new animal (tipo,cantidad);
+						nuevaFinca.animales.push(nuevoAnimal);
+					}
+				}
+				
+				if (f.fincas[i].hasOwnProperty('finca_cultivos')){
+					for (var j in f.fincas[i].finca_cultivos) {
+						tipo_cultivo = "";
+						extension_cultivo = "";
+						cocecha = "";
+						if (f.fincas[i].finca_cultivos[j].hasOwnProperty('tipo')) {
+							tipo_cultivo = f.fincas[i].finca_cultivos[j].tipo;
+						}
+						if (f.fincas[i].finca_cultivos[j].hasOwnProperty('extension')) {
+							extension_cultivo = f.fincas[i].finca_cultivos[j].extension;
+						}
+						if (f.fincas[i].finca_cultivos[j].hasOwnProperty('cocecha')) {
+							cocecha = f.fincas[i].finca_cultivos[j].cocecha;
+						}
+						nuevoCultivo = new cultivo (tipo_cultivo,extension_cultivo,cocecha);
+						nuevaFinca.cultivos.push(nuevoCultivo);
+					}
+				}				
+				fincas.push(nuevaFinca);
 			}
-			alert(a);
+			updateFincas();
+			updateObreros();
+			updateAnimales();
+			updateCultivos();
 		});
 	  }
 
@@ -72,8 +167,13 @@
         var ubicacion = document.getElementById("f1_ubicacion");
         for (var i = 0 ; i < fincas.length; i++) {
           if (fincas[i].nombre == nombre.value){
-            alert("Finca ya existe.");
-            return;
+            //alert("Finca ya existe.");
+            //return;
+			fincas[i].propietario = propietario.value;
+			fincas[i].extension = extension.value;
+			fincas[i].ubicacion = ubicacion.value;
+			updateFincas();
+			return;
           }
         }
         var nuevaFinca = new finca (nombre.value,propietario.value,extension.value,ubicacion.value);
