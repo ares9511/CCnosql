@@ -27,23 +27,37 @@
       //var database = firebase.database();
 
       function writeData() {
+		var rUpdate = null;
       	for (var i = 0 ; i < fincas.length; i++) {
-			//alert(fincas.length);
-	        firebase.database().ref('fincas/'+fincas[i].nombre).set({
-            finca_propietario: fincas[i].propietario,
-         	finca_extension: fincas[i].extension,
-	        finca_ubicacion: fincas[i].ubicacion,
-	        finca_obreros: fincas[i].obreros,
-	        finca_animales: fincas[i].animales,
-	        finca_cultivos: fincas[i].cultivos
-	      });
+			if (fincas[i].nuevo) {
+				firebase.database().ref('fincas/'+fincas[i].nombre).set({
+				finca_propietario: fincas[i].propietario,
+				finca_extension: fincas[i].extension,
+				finca_ubicacion: fincas[i].ubicacion,
+				finca_obreros: fincas[i].obreros,
+				finca_animales: fincas[i].animales,
+				finca_cultivos: fincas[i].cultivos
+				});
+				fincas[i].nuevo = false;
+			} else {
+				rUpdate = firebase.database().ref('fincas/'+fincas[i].nombre);
+				rUpdate.update({
+					"finca_propietario": fincas[i].propietario,
+					"finca_extension": fincas[i].extension,
+					"finca_ubicacion": fincas[i].ubicacion,
+					"finca_obreros": fincas[i].obreros,
+					"finca_animales": fincas[i].animales,
+					"finca_cultivos": fincas[i].cultivos
+				});
+			}
         }
+		init();
         alert("Datos almacenados en la base de datos correctamente.");
       }
 	  
 	  function init(){
-		//alert("Init");
-		var fincasRef = firebase.database().ref();
+		fincas = new Array();
+		var fincasRef = firebase.database().ref("fincas/");
 		fincasRef.on('value', function(snapshot) {
 			var f = snapshot.val();
 			
@@ -67,78 +81,79 @@
 	        var extension_cultivo = "";
 	        var cocecha = "";
 			
-			console.log(f.fincas);
-			for (var i in f.fincas) {
+			console.log(f);
+			for (var i in f) {
 				propietario = "";
 				extension = "";
 				ubicacion = "";
-				if (f.fincas[i].hasOwnProperty('finca_propietario')) {
-					propietario = f.fincas[i].finca_propietario;
+				if (f[i].hasOwnProperty('finca_propietario')) {
+					propietario = f[i].finca_propietario;
 				}
-				if (f.fincas[i].hasOwnProperty('finca_extension')){
-					extension = f.fincas[i].finca_extension;
+				if (f[i].hasOwnProperty('finca_extension')){
+					extension = f[i].finca_extension;
 				}
-				if (f.fincas[i].hasOwnProperty('finca_ubicacion')){
-					ubicacion = f.fincas[i].finca_ubicacion;
+				if (f[i].hasOwnProperty('finca_ubicacion')){
+					ubicacion = f[i].finca_ubicacion;
 				}
 				nuevaFinca = new finca (i,propietario,extension,ubicacion);
 				
-				if (f.fincas[i].hasOwnProperty('finca_obreros')){
-					for (var j in f.fincas[i].finca_obreros) {
+				if (f[i].hasOwnProperty('finca_obreros')){
+					for (var j in f[i].finca_obreros) {
 						nombre = "";
 						feccon = "";
 						tiecon = "";
 						sueldo = "";
-						if (f.fincas[i].finca_obreros[j].hasOwnProperty('nombre')) {
-							nombre = f.fincas[i].finca_obreros[j].nombre;
+						if (f[i].finca_obreros[j].hasOwnProperty('nombre')) {
+							nombre = f[i].finca_obreros[j].nombre;
 						}
-						if (f.fincas[i].finca_obreros[j].hasOwnProperty('feccon')) {
-							feccon = f.fincas[i].finca_obreros[j].feccon;
+						if (f[i].finca_obreros[j].hasOwnProperty('feccon')) {
+							feccon = f[i].finca_obreros[j].feccon;
 						}
-						if (f.fincas[i].finca_obreros[j].hasOwnProperty('tiecon')) {
-							tiecon = f.fincas[i].finca_obreros[j].tiecon;
+						if (f[i].finca_obreros[j].hasOwnProperty('tiecon')) {
+							tiecon = f[i].finca_obreros[j].tiecon;
 						}
-						if (f.fincas[i].finca_obreros[j].hasOwnProperty('sueldo')) {
-							sueldo = f.fincas[i].finca_obreros[j].sueldo;
+						if (f[i].finca_obreros[j].hasOwnProperty('sueldo')) {
+							sueldo = f[i].finca_obreros[j].sueldo;
 						}
 						nuevoObrero = new obrero (nombre,feccon,tiecon,sueldo);
 						nuevaFinca.obreros.push(nuevoObrero);
 					}
 				}
 				
-				if (f.fincas[i].hasOwnProperty('finca_animales')){
-					for (var j in f.fincas[i].finca_animales) {
+				if (f[i].hasOwnProperty('finca_animales')){
+					for (var j in f[i].finca_animales) {
 						tipo = "";
 						cantidad = "";
-						if (f.fincas[i].finca_animales[j].hasOwnProperty('tipo')) {
-							tipo = f.fincas[i].finca_animales[j].tipo;
+						if (f[i].finca_animales[j].hasOwnProperty('tipo')) {
+							tipo = f[i].finca_animales[j].tipo;
 						}
-						if (f.fincas[i].finca_animales[j].hasOwnProperty('cantidad')) {
-							cantidad = f.fincas[i].finca_animales[j].cantidad;
+						if (f[i].finca_animales[j].hasOwnProperty('cantidad')) {
+							cantidad = f[i].finca_animales[j].cantidad;
 						}
 						nuevoAnimal = new animal (tipo,cantidad);
 						nuevaFinca.animales.push(nuevoAnimal);
 					}
 				}
 				
-				if (f.fincas[i].hasOwnProperty('finca_cultivos')){
-					for (var j in f.fincas[i].finca_cultivos) {
+				if (f[i].hasOwnProperty('finca_cultivos')){
+					for (var j in f[i].finca_cultivos) {
 						tipo_cultivo = "";
 						extension_cultivo = "";
 						cocecha = "";
-						if (f.fincas[i].finca_cultivos[j].hasOwnProperty('tipo')) {
-							tipo_cultivo = f.fincas[i].finca_cultivos[j].tipo;
+						if (f[i].finca_cultivos[j].hasOwnProperty('tipo')) {
+							tipo_cultivo = f[i].finca_cultivos[j].tipo;
 						}
-						if (f.fincas[i].finca_cultivos[j].hasOwnProperty('extension')) {
-							extension_cultivo = f.fincas[i].finca_cultivos[j].extension;
+						if (f[i].finca_cultivos[j].hasOwnProperty('extension')) {
+							extension_cultivo = f[i].finca_cultivos[j].extension;
 						}
-						if (f.fincas[i].finca_cultivos[j].hasOwnProperty('cocecha')) {
-							cocecha = f.fincas[i].finca_cultivos[j].cocecha;
+						if (f[i].finca_cultivos[j].hasOwnProperty('cocecha')) {
+							cocecha = f[i].finca_cultivos[j].cocecha;
 						}
 						nuevoCultivo = new cultivo (tipo_cultivo,extension_cultivo,cocecha);
 						nuevaFinca.cultivos.push(nuevoCultivo);
 					}
-				}				
+				}
+				nuevaFinca.nuevo = false;
 				fincas.push(nuevaFinca);
 			}
 			updateFincas();
@@ -158,6 +173,7 @@
         this.obreros = new Array();
         this.animales = new Array();
         this.cultivos = new Array();
+		this.nuevo = true;
       }
 
       function addFinca (){
