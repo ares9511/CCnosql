@@ -393,6 +393,31 @@
         sueldo.value = "";
       }
 	  
+	  function searchObrero (){
+        var finca = document.getElementById("f2_fincas");
+        var nombre = document.getElementById("f2_nombre");
+        var feccon = document.getElementById("f2_feccon");
+        var tiecon = document.getElementById("f2_tiecon");
+        var sueldo = document.getElementById("f2_sueldo");
+		var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].obreros.length; j++) {
+				if (fincas[i].obreros[j].nombre == nombre.value) {
+					feccon.value = fincas[i].obreros[j].feccon;
+					tiecon.value = fincas[i].obreros[j].tiecon;
+					sueldo.value = fincas[i].obreros[j].sueldo;
+					encontrado = true;
+					return;
+				}
+			}
+          }
+        }
+		if (!encontrado){
+			alert("No existe obrero: "+nombre.value);
+		}
+      }
+	  
 	  function animal (tipo, cantidad){
         this.tipo = tipo;
         this.cantidad = Number(cantidad);
@@ -486,6 +511,27 @@
 		}
         tipo.value = "";
         cantidad.value = "";
+      }
+	  
+	  function searchAnimal (){
+        var finca = document.getElementById("f3_fincas");
+        var tipo = document.getElementById("f3_tipo");
+        var cantidad = document.getElementById("f3_cantidad");
+        var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].animales.length; j++) {
+				if (fincas[i].animales[j].tipo == tipo.value) {
+					cantidad.value = fincas[i].animales[j].cantidad;
+					encontrado = true;
+					return;
+				}
+			}
+          }
+        }
+		if (!encontrado){
+			alert("No existe animal: "+tipo.value);
+		}
       }
 
         function cultivo (tipo, extension, cocecha){
@@ -584,6 +630,29 @@
         tipo.value = "";
 	    extension.value = "";
 	    cocecha.value = "";
+      }
+	  
+	  function searchCultivo (){
+        var finca = document.getElementById("f4_fincas");
+	    var tipo = document.getElementById("f4_tipo");
+	    var extension = document.getElementById("f4_extension");
+	    var cocecha = document.getElementById("f4_cocecha");
+        var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].cultivos.length; j++) {
+				if (fincas[i].cultivos[j].tipo == tipo.value) {
+					extension.value = fincas[i].cultivos[j].extension;
+					cocecha.value = fincas[i].cultivos[j].cocecha;
+					encontrado = true;
+					return;
+				}
+			}
+          }
+        }
+		if (!encontrado){
+			alert("No existe cultivo: "+tipo.value);
+		}
       }
 
     </script>
@@ -685,6 +754,7 @@
                   <input type="text" class="form-control" id="f2_sueldo">
                 </div>
                 <div class="d-flex justify-content-center">
+				  <button type="button" class="btn btn-warning" onclick="searchObrero();">Buscar</button>
                   <button type="button" class="btn btn-primary" onclick="addObrero();">Guardar</button>  
 				  <button type="button" class="btn btn-danger" onclick="deleteObrero()">Eliminar</button>  
                 </div>
@@ -724,6 +794,7 @@
                   <input type="text" class="form-control" id="f3_cantidad">
                 </div>
                 <div class="d-flex justify-content-center">
+				  <button type="button" class="btn btn-warning" onclick="searchAnimal();">Buscar</button>
                   <button type="button" class="btn btn-primary" onclick="addAnimal();">Guardar</button>  
 				  <button type="button" class="btn btn-danger" onclick="deleteAnimal()">Eliminar</button>  
                 </div>
@@ -765,6 +836,7 @@
                   <input type="text" class="form-control" id="f4_cocecha">
                 </div>
                 <div class="d-flex justify-content-center">
+				  <button type="button" class="btn btn-warning" onclick="searchCultivo();">Buscar</button>
                   <button type="button" class="btn btn-primary" onclick="addCultivo();">Guardar</button>  
 				  <button type="button" class="btn btn-danger" onclick="deleteCultivo()">Eliminar</button>  
                 </div>
