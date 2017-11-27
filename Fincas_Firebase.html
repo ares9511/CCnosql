@@ -28,16 +28,19 @@
 
       function writeData() {
 		var rUpdate = null;
+		var rInsert = null;
       	for (var i = 0 ; i < fincas.length; i++) {
 			if (fincas[i].nuevo) {
-				firebase.database().ref('fincas/'+fincas[i].nombre).set({
-				finca_propietario: fincas[i].propietario,
-				finca_extension: fincas[i].extension,
-				finca_ubicacion: fincas[i].ubicacion,
-				finca_obreros: fincas[i].obreros,
-				finca_animales: fincas[i].animales,
-				finca_cultivos: fincas[i].cultivos
+				rInsert = firebase.database().ref('fincas/'+fincas[i].nombre);
+				rInsert.set({
+				"finca_propietario": fincas[i].propietario,
+				"finca_extension": fincas[i].extension,
+				"finca_ubicacion": fincas[i].ubicacion,
+				"finca_obreros": fincas[i].obreros,
+				"finca_animales": fincas[i].animales,
+				"finca_cultivos": fincas[i].cultivos
 				});
+				rInsert.off();
 				fincas[i].nuevo = false;
 			} else {
 				rUpdate = firebase.database().ref('fincas/'+fincas[i].nombre);
@@ -49,8 +52,10 @@
 					"finca_animales": fincas[i].animales,
 					"finca_cultivos": fincas[i].cultivos
 				});
+				rUpdate.off();
 			}
         }
+		
 		init();
         alert("Datos almacenados en la base de datos correctamente.");
       }
@@ -189,6 +194,7 @@
 			fincas[i].extension = extension.value;
 			fincas[i].ubicacion = ubicacion.value;
 			updateFincas();
+			alert("Finca ha sido actualizada");
 			return;
           }
         }
@@ -315,6 +321,16 @@
         var sueldo = document.getElementById("f2_sueldo");
         for (var i = 0 ; i < fincas.length; i++) {
           if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].obreros.length; j++) {
+				if (fincas[i].obreros[j].nombre == nombre.value){
+					fincas[i].obreros[j].feccon = feccon.value;
+					fincas[i].obreros[j].tiecon = tiecon.value;
+					fincas[i].obreros[j].sueldo = sueldo.value;
+					updateObreros();
+					alert("Contrato de obrero ha sido actualizado.");
+					return;
+				}
+			}
             var nuevoObrero = new obrero (nombre.value,feccon.value,tiecon.value,sueldo.value);
             fincas[i].obreros.push(nuevoObrero);
             updateObreros();
@@ -439,6 +455,7 @@
               if (fincas[i].animales[j].tipo == tipo.value) {
                 fincas[i].animales[j].cantidad = fincas[i].animales[j].cantidad + Number(cantidad.value);
                 existe = true;
+				alert("La cantidad de animales ha sido actualizada.");
                 break;
               }
             }
@@ -560,6 +577,7 @@
 					fincas[i].cultivos[j].extension = extension.value;
 					fincas[i].cultivos[j].cocecha = cocecha.value;
 					updateCultivos();
+					alert("El cultivo ha sido actualizado.");
 					return;
 	              }
 	            }
