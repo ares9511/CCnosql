@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">      
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.4.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.1.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.1.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.1.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/4.1.1/firebase-messaging.js"></script>
+    <script>
+    
+      var config = {
+        apiKey: "AIzaSyA9FFqiVF1ACQLxaKWdr9mcpESMlYFEkuM",
+        authDomain: "tallertw-9e0f0.firebaseapp.com",
+        databaseURL: "https://tallertw-9e0f0.firebaseio.com",
+        projectId: "tallertw-9e0f0",
+        storageBucket: "",
+        messagingSenderId: "565741047422"
+      };
+
+      firebase.initializeApp(config);
+      var database = firebase.database();
+
+      function writeData() {
+      	for (var i = 0 ; i < fincas.length; i++) {
+	        firebase.database().ref('fincas/'+fincas[i].nombre).set({
+            finca_propietario: fincas[i].propietario,
+         	finca_extension: fincas[i].extension,
+	        finca_ubicacion: fincas[i].ubicacion,
+	        finca_obreros: fincas[i].obreros,
+	        finca_animales: fincas[i].animales,
+	        finca_cultivos: fincas[i].cultivos
+	      });
+        }
+        alert("Datos almacenados en la base de datos correctamente.");
+      }
+	  
+	  function init(){
+		var fincasRef = firebase.database().ref();
+		fincasRef.on('value', function(snapshot) {
+			var f = snapshot.val();
+			var a = "";
+			console.log(f.fincas);
+			for (var i in f.fincas) {
+				a = a + i;
+			}
+			alert(a);
+		});
+	  }
+
+      var fincas = new Array();
+
+      function finca (nombre, propietario, extension, ubicacion){
+        this.nombre = nombre;
+        this.propietario = propietario;
+        this.extension = extension;
+        this.ubicacion = ubicacion;
+        this.obreros = new Array();
+        this.animales = new Array();
+        this.cultivos = new Array();
+      }
+
+      function addFinca (){
+        var nombre = document.getElementById("f1_nombre");
+        var propietario = document.getElementById("f1_propietario");
+        var extension = document.getElementById("f1_extension");
+        var ubicacion = document.getElementById("f1_ubicacion");
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == nombre.value){
+            alert("Finca ya existe.");
+            return;
+          }
+        }
+        var nuevaFinca = new finca (nombre.value,propietario.value,extension.value,ubicacion.value);
+        fincas.push(nuevaFinca);
+        updateFincas();
+        alert("Finca agregada correctamente");
+        nombre.value = "";
+        propietario.value = "";
+        extension.value = "";
+        ubicacion.value = "";
+      }
+
+      function updateFincas() {
+        var f1_table = document.getElementById("f1_table");
+        var f2_fincas = document.getElementById("f2_fincas");
+        var f3_fincas = document.getElementById("f3_fincas");
+        var f4_fincas = document.getElementById("f4_fincas");
+        f2_fincas.options.length = 0;
+        f3_fincas.options.length = 0;
+        f4_fincas.options.length = 0;
+        while (f1_table.firstChild) {
+          f1_table.removeChild(f1_table.firstChild);
+        }
+        fincas.sort(sortFincas);
+        for (var i = 0 ; i < fincas.length; i++) {
+          var opt2 = document.createElement('option');
+          var opt3 = document.createElement('option');
+          var opt4 = document.createElement('option');
+          opt2.innerHTML = opt3.innerHTML = opt4.innerHTML = fincas[i].nombre;
+          opt2.value = opt3.value = opt4.value = fincas[i].nombre;
+          f2_fincas.appendChild(opt2);
+          f3_fincas.appendChild(opt3);
+          f4_fincas.appendChild(opt4);
+          var tr0 = document.createElement('tr');
+          var td_nombre = document.createElement('td');
+          var td_propietario = document.createElement('td');
+          var td_extension = document.createElement('td');
+          var td_ubicacion = document.createElement('td');
+          td_nombre.innerHTML = fincas[i].nombre;
+          td_propietario.innerHTML = fincas[i].propietario;
+          td_extension.innerHTML = fincas[i].extension;
+          td_ubicacion.innerHTML = fincas[i].ubicacion;
+          tr0.appendChild(td_nombre);
+          tr0.appendChild(td_propietario);
+          tr0.appendChild(td_extension);
+          tr0.appendChild(td_ubicacion);
+          f1_table.appendChild(tr0);
+        }
+      }
+
+      function sortFincas(a , b){
+        if (a.nombre < b.nombre)
+          return -1;
+        if (a.nombre > b.nombre)
+          return 1;
+        return 0;
+      }
+
+      function obrero (nombre, feccon, tiecon, sueldo){
+        this.nombre = nombre;
+        this.feccon = feccon;
+        this.tiecon = tiecon;
+        this.sueldo = sueldo;
+      }
+
+      function addObrero(){
+        if (fincas.length == 0) {
+          alert("No se ha ingresado ninguna Finca.");
+          return;
+        }
+        var finca = document.getElementById("f2_fincas");
+        var nombre = document.getElementById("f2_nombre");
+        var feccon = document.getElementById("f2_feccon");
+        var tiecon = document.getElementById("f2_tiecon");
+        var sueldo = document.getElementById("f2_sueldo");
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+            var nuevoObrero = new obrero (nombre.value,feccon.value,tiecon.value,sueldo.value);
+            fincas[i].obreros.push(nuevoObrero);
+            updateObreros();
+            nombre.value = "";
+            feccon.value = "";
+            tiecon.value = "";
+            sueldo.value = "";
+            alert("Obrero ha sido ingresado.");
+            return;
+          }
+        }
+        alert("Obrero no se pudo ingresar.");
+      }
+
+      function updateObreros(){
+        var f2_table = document.getElementById("f2_table");
+        while (f2_table.firstChild) {
+          f2_table.removeChild(f2_table.firstChild);
+        }
+        for (var i = 0 ; i < fincas.length; i++) {
+          for (var j = 0 ; j < fincas[i].obreros.length; j++) {
+          	var tr = document.createElement('tr');
+          	var td1 = document.createElement('td');
+          	var td2 = document.createElement('td');
+          	var td3 = document.createElement('td');
+          	var td4 = document.createElement('td');
+          	var td5 = document.createElement('td');
+          	td1.innerHTML = fincas[i].nombre;
+          	td2.innerHTML = fincas[i].obreros[j].nombre;
+          	td3.innerHTML = fincas[i].obreros[j].feccon;
+          	td4.innerHTML = fincas[i].obreros[j].tiecon;
+          	td5.innerHTML = fincas[i].obreros[j].sueldo;
+          	tr.appendChild(td1);
+          	tr.appendChild(td2);
+          	tr.appendChild(td3);
+          	tr.appendChild(td4);
+          	tr.appendChild(td5);
+          	f2_table.appendChild(tr);
+          }
+        }
+      }
+
+      function animal (tipo, cantidad){
+        this.tipo = tipo;
+        this.cantidad = Number(cantidad);
+      }
+
+      function addAnimal(){
+        if (fincas.length == 0) {
+          alert("No se ha ingresado ninguna Finca.");
+          return;
+        }
+        var finca = document.getElementById("f3_fincas");
+        var tipo = document.getElementById("f3_tipo");
+        var cantidad = document.getElementById("f3_cantidad");
+        var existe = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+            var nuevoAnimal = new animal (tipo.value,cantidad.value);
+            for (var j = 0 ; j < fincas[i].animales.length; j++) {
+              if (fincas[i].animales[j].tipo == tipo.value) {
+                fincas[i].animales[j].cantidad = fincas[i].animales[j].cantidad + Number(cantidad.value);
+                existe = true;
+                break;
+              }
+            }
+            if (!existe) {
+              fincas[i].animales.push(nuevoAnimal);
+            }
+            updateAnimales();
+            tipo.value = "";
+            cantidad.value = "";
+            alert("El animal ha sido ingresado.");
+            return;
+          }
+        }
+        alert("Animal no se pudo ingresar.");
+      }
+
+      function updateAnimales(){
+        var f3_table = document.getElementById("f3_table");
+        while (f3_table.firstChild) {
+          f3_table.removeChild(f3_table.firstChild);
+        }
+        for (var i = 0 ; i < fincas.length; i++) {
+          for (var j = 0 ; j < fincas[i].animales.length; j++) {
+            var tr = document.createElement('tr');
+          	var td1 = document.createElement('td');
+          	var td2 = document.createElement('td');
+          	var td3 = document.createElement('td');
+          	td1.innerHTML = fincas[i].nombre;
+          	td2.innerHTML = fincas[i].animales[j].tipo;
+          	td3.innerHTML = fincas[i].animales[j].cantidad;
+          	tr.appendChild(td1);
+          	tr.appendChild(td2);
+          	tr.appendChild(td3);
+          	f3_table.appendChild(tr);
+          }
+        }
+      }
+
+        function cultivo (tipo, extension, cocecha){
+	      this.tipo = tipo;
+	      this.extension = Number(extension);
+	      this.cocecha = Number(cocecha);
+	    }
+
+        function addCultivo(){
+	        if (fincas.length == 0) {
+	          alert("No se ha ingresado ninguna Finca.");
+	          return;
+	        }
+	        var finca = document.getElementById("f4_fincas");
+	        var tipo = document.getElementById("f4_tipo");
+	        var extension = document.getElementById("f4_extension");
+	        var cocecha = document.getElementById("f4_cocecha");
+	        var existe = false;
+	        for (var i = 0 ; i < fincas.length; i++) {
+	          if (fincas[i].nombre == finca.value){
+	            var nuevoCultivo = new cultivo (tipo.value,extension.value,cocecha.value);
+	            for (var j = 0 ; j < fincas[i].cultivos.length; j++) {
+	              if (fincas[i].cultivos[j].tipo == tipo.value) {
+	                alert("El cultivo ya existe.");
+	                return;
+	              }
+	            }
+	            fincas[i].cultivos.push(nuevoCultivo);
+	            updateCultivos();
+	            tipo.value = "";
+	            extension.value = "";
+	            cocecha.value = "";
+	            alert("El cultivo ha sido ingresado.");
+	            return;
+	           }
+	        }
+	    }
+
+      	function updateCultivos(){
+        var f4_table = document.getElementById("f4_table");
+        while (f4_table.firstChild) {
+          f4_table.removeChild(f4_table.firstChild);
+        }
+        for (var i = 0 ; i < fincas.length; i++) {
+          for (var j = 0 ; j < fincas[i].cultivos.length; j++) {
+            var tr = document.createElement('tr');
+          	var td1 = document.createElement('td');
+          	var td2 = document.createElement('td');
+          	var td3 = document.createElement('td');
+          	var td4 = document.createElement('td');
+          	td1.innerHTML = fincas[i].nombre;
+          	td2.innerHTML = fincas[i].cultivos[j].tipo;
+          	td3.innerHTML = fincas[i].cultivos[j].extension;
+          	td4.innerHTML = fincas[i].cultivos[j].cocecha;
+          	tr.appendChild(td1);
+          	tr.appendChild(td2);
+          	tr.appendChild(td3);
+          	tr.appendChild(td4);
+          	f4_table.appendChild(tr);
+          }
+        }
+      }
+
+    </script>
+  </head>
+  <body onload="init()">
+    <div class="jumbotron jumbotron-fluid">
+      <div class="container">
+        <h1 class="display-3">Gestión de Fincas</h1>
+        <p class="lead">Sistema para la gestión de Fincas, obreros, ganado y cultivos.</p>
+      </div>
+    </div>
+    <div class="container-fluid d-flex justify-content-center">
+      <div>
+        <button type="button" class="btn btn-outline-success" onclick="writeData();">Grabar Cambios</button>
+        <button type="button" class="btn btn-outline-danger">Restaurar</button>
+      </div>
+    </div>
+    <div class="container-fluid">
+      <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+        <li class="nav-item">
+          <a class="nav-link active" id="pills-fincas-tab" data-toggle="pill" href="#pills-fincas" role="tab" aria-controls="pills-fincas" aria-expanded="true">Fincas</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="pills-trabajadores-tab" data-toggle="pill" href="#pills-trabajadores" role="tab" aria-controls="pills-trabajadores" aria-expanded="true">Trabajadores</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="pills-ganado-tab" data-toggle="pill" href="#pills-ganado" role="tab" aria-controls="pills-ganado" aria-expanded="true">Ganado</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="pills-cultivos-tab" data-toggle="pill" href="#pills-cultivos" role="tab" aria-controls="pills-cultivos" aria-expanded="true">Cultivos</a>
+        </li>
+      </ul>
+      <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-fincas" role="tabpanel" aria-labelledby="pills-fincas-tab">
+          <div class="row">
+            <div class="col-5">
+              <form>
+                <div class="form-group">
+                  <label for="f1_nombre">Nombre</label>
+                  <input type="text" class="form-control" id="f1_nombre">
+                </div>
+                <div class="form-group">
+                  <label for="f1_propietario">Propietario</label>
+                  <input type="text" class="form-control" id="f1_propietario">
+                </div>
+                <div class="form-group">
+                  <label for="f1_extension">Extensión</label>
+                  <input type="text" class="form-control" id="f1_extension">
+                </div>
+                <div class="form-group">
+                  <label for="f1_ubicacion">Ubicación</label>
+                  <input type="text" class="form-control" id="f1_ubicacion">
+                </div>
+                <div class="d-flex justify-content-center">
+                  <button type="button" class="btn btn-primary" onclick="addFinca();">Guardar</button>  
+                </div>
+              </form>
+            </div>
+            <div class="col-7">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Propietario</th>
+                    <th>Extensión</th>
+                    <th>Ubicación</th>
+                  </tr>
+                </thead>
+                <tbody id="f1_table">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="pills-trabajadores" role="tabpanel" aria-labelledby="pills-trabajadores-tab">
+          <div class="row">
+            <div class="col-5">
+              <form>
+                <div class="form-group">
+                  <label for="f2_fincas">Finca</label>
+                  <select class="form-control" id="f2_fincas"></select>
+                </div>
+                <div class="form-group">
+                  <label for="f2_nombre">Nombre</label>
+                  <input type="text" class="form-control" id="f2_nombre">
+                </div>
+                <div class="form-group">
+                  <label for="f2_feccon">Fecha de Contrato</label>
+                  <input type="text" class="form-control" id="f2_feccon">
+                </div>
+                <div class="form-group">
+                  <label for="f2_tiecon">Tiempo Contrato (Meses)</label>
+                  <input type="text" class="form-control" id="f2_tiecon">
+                </div>
+                <div class="form-group">
+                  <label for="f2_sueldo">Sueldo</label>
+                  <input type="text" class="form-control" id="f2_sueldo">
+                </div>
+                <div class="d-flex justify-content-center">
+                  <button type="button" class="btn btn-primary" onclick="addObrero();">Guardar</button>  
+                </div>
+              </form>
+            </div>
+            <div class="col-7">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Finca</th>
+                    <th>Nombre</th>
+                    <th>Fecha Contrato</th>
+                    <th>Tiempo Contrato</th>
+                    <th>Sueldo</th>
+                  </tr>
+                </thead>
+                <tbody id="f2_table">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="pills-ganado" role="tabpanel" aria-labelledby="pills-ganado-tab">
+          <div class="row">
+            <div class="col-5">
+              <form>
+                <div class="form-group">
+                  <label for="f3_fincas">Finca</label>
+                  <select class="form-control" id="f3_fincas"></select>
+                </div>
+                <div class="form-group">
+                  <label for="f3_tipo">Tipo</label>
+                  <input type="text" class="form-control" id="f3_tipo">
+                </div>
+                <div class="form-group">
+                  <label for="f3_cantidad">Cantidad</label>
+                  <input type="text" class="form-control" id="f3_cantidad">
+                </div>
+                <div class="d-flex justify-content-center">
+                  <button type="button" class="btn btn-primary" onclick="addAnimal();">Guardar</button>  
+                </div>
+              </form>
+            </div>
+            <div class="col-7">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Finca</th>
+                    <th>Tipo</th>
+                    <th>Cantidad</th>
+                  </tr>
+                </thead>
+                <tbody id="f3_table">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="pills-cultivos" role="tabpanel" aria-labelledby="pills-cultivos-tab">
+          <div class="row">
+            <div class="col-5">
+              <form>
+                <div class="form-group">
+                  <label for="f4_fincas">Finca</label>
+                  <select class="form-control" id="f4_fincas"></select>
+                </div>
+                <div class="form-group">
+                  <label for="f4_tipo">Tipo</label>
+                  <input type="text" class="form-control" id="f4_tipo">
+                </div>
+                <div class="form-group">
+                  <label for="f4_extension">Extensión</label>
+                  <input type="text" class="form-control" id="f4_extension">
+                </div>
+                <div class="form-group">
+                  <label for="f4_cocecha">Tiempo de Cocecha (Meses)</label>
+                  <input type="text" class="form-control" id="f4_cocecha">
+                </div>
+                <div class="d-flex justify-content-center">
+                  <button type="button" class="btn btn-primary" onclick="addCultivo();">Guardar</button>  
+                </div>
+              </form>
+            </div>
+            <div class="col-7">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Finca</th>
+                    <th>Tipo</th>
+                    <th>Extensión</th>
+                    <th>Tiempo Cocecha</th>
+                  </tr>
+                </thead>
+                <tbody id="f4_table">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
