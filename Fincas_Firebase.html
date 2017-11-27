@@ -247,6 +247,54 @@
           return 1;
         return 0;
       }
+	  
+	  function deleteFinca (){
+        var nombre = document.getElementById("f1_nombre");
+		var propietario = document.getElementById("f1_propietario");
+        var extension = document.getElementById("f1_extension");
+        var ubicacion = document.getElementById("f1_ubicacion");
+		var fincasRef = null;
+		var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == nombre.value){
+            fincas.splice(i,1);
+			fincasRef = firebase.database().ref("fincas/");
+			//console.log(fincas.splice(i,1));
+			fincasRef.child(nombre.value).remove();
+			alert("Se eliminó la finca: " + nombre.value);
+			init();
+			encontrado = true;
+          }
+        }
+		if (!encontrado){
+			alert("No existe finca: " + nombre.value);
+			return;
+		}
+        nombre.value = "";
+        propietario.value = "";
+        extension.value = "";
+        ubicacion.value = "";
+      }
+	  
+	  function searchFinca (){
+        var nombre = document.getElementById("f1_nombre");
+        var propietario = document.getElementById("f1_propietario");
+        var extension = document.getElementById("f1_extension");
+        var ubicacion = document.getElementById("f1_ubicacion");
+		var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == nombre.value){
+		    propietario.value = fincas[i].propietario;
+			extension.value = fincas[i].extension;
+            ubicacion.value = fincas[i].ubicacion;
+			encontrado = true;
+			return;
+          }
+        }
+		if (!encontrado){
+			alert("No existe finca: "+nombre.value);
+		}
+      }
 
       function obrero (nombre, feccon, tiecon, sueldo){
         this.nombre = nombre;
@@ -309,7 +357,43 @@
         }
       }
 
-      function animal (tipo, cantidad){
+      function deleteObrero (){
+        var finca = document.getElementById("f2_fincas");
+        var nombre = document.getElementById("f2_nombre");
+        var feccon = document.getElementById("f2_feccon");
+        var tiecon = document.getElementById("f2_tiecon");
+        var sueldo = document.getElementById("f2_sueldo");
+		var fincasRef = null;
+		var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].obreros.length; j++) {
+				if (fincas[i].obreros[j].nombre == nombre.value && fincas[i].obreros[j].feccon == feccon.value
+					&& fincas[i].obreros[j].tiecon == tiecon.value && fincas[i].obreros[j].sueldo == sueldo.value) {
+					fincas[i].obreros.splice(j,1);					
+					fincasRef = firebase.database().ref('fincas/'+fincas[i].nombre);
+					fincasRef.update({
+					"finca_obreros": fincas[i].obreros
+					});
+
+					alert("Se eliminó al obrero: " + nombre.value);
+					init();
+					encontrado = true;
+				}
+			}  
+          }
+        }
+		if (!encontrado){
+			alert("No existe obrero: " + nombre.value);
+			return;
+		}
+        nombre.value = "";
+        feccon.value = "";
+        tiecon.value = "";
+        sueldo.value = "";
+      }
+	  
+	  function animal (tipo, cantidad){
         this.tipo = tipo;
         this.cantidad = Number(cantidad);
       }
@@ -367,6 +451,42 @@
           }
         }
       }
+	  
+	  function deleteAnimal (){
+        var finca = document.getElementById("f3_fincas");
+        var tipo = document.getElementById("f3_tipo");
+        var cantidad = document.getElementById("f3_cantidad");
+		var fincasRef = null;
+		var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].animales.length; j++) {
+				if (fincas[i].animales[j].tipo == tipo.value) {
+					
+					fincas[i].animales[j].cantidad = fincas[i].animales[j].cantidad - Number(cantidad.value);
+					if (fincas[i].animales[j].cantidad == 0){
+						fincas[i].animales.splice(j,1);
+					}
+					fincasRef = firebase.database().ref('fincas/'+fincas[i].nombre);
+					fincasRef.update({
+						"finca_animales": fincas[i].animales
+					});
+
+					alert("Se eliminó al animal: " + tipo.value);
+					init();
+					encontrado = true;
+					break;
+				}
+			}  
+          }
+        }
+		if (!encontrado){
+			alert("No existe animal: " + tipo.value);
+			return;
+		}
+        tipo.value = "";
+        cantidad.value = "";
+      }
 
         function cultivo (tipo, extension, cocecha){
 	      this.tipo = tipo;
@@ -389,8 +509,12 @@
 	            var nuevoCultivo = new cultivo (tipo.value,extension.value,cocecha.value);
 	            for (var j = 0 ; j < fincas[i].cultivos.length; j++) {
 	              if (fincas[i].cultivos[j].tipo == tipo.value) {
-	                alert("El cultivo ya existe.");
-	                return;
+	                //alert("El cultivo ya existe.");
+	                //return;
+					fincas[i].cultivos[j].extension = extension.value;
+					fincas[i].cultivos[j].cocecha = cocecha.value;
+					updateCultivos();
+					return;
 	              }
 	            }
 	            fincas[i].cultivos.push(nuevoCultivo);
@@ -428,6 +552,39 @@
           }
         }
       }
+	  
+	  function deleteCultivo (){
+        var finca = document.getElementById("f4_fincas");
+	    var tipo = document.getElementById("f4_tipo");
+	    var extension = document.getElementById("f4_extension");
+	    var cocecha = document.getElementById("f4_cocecha");
+		var fincasRef = null;
+		var encontrado = false;
+        for (var i = 0 ; i < fincas.length; i++) {
+          if (fincas[i].nombre == finca.value){
+			for (var j = 0 ; j < fincas[i].cultivos.length; j++) {
+				if (fincas[i].cultivos[j].tipo == tipo.value) {
+					fincas[i].cultivos.splice(j,1);
+					fincasRef = firebase.database().ref('fincas/'+fincas[i].nombre);
+					fincasRef.update({
+						"finca_cultivos": fincas[i].cultivos
+					});
+					alert("Se eliminó el cultivo: " + tipo.value);
+					init();
+					encontrado = true;
+					break;
+				}
+			}  
+          }
+        }
+		if (!encontrado){
+			alert("No existe cultivo: " + tipo.value);
+			return;
+		}
+        tipo.value = "";
+	    extension.value = "";
+	    cocecha.value = "";
+      }
 
     </script>
   </head>
@@ -441,7 +598,7 @@
     <div class="container-fluid d-flex justify-content-center">
       <div>
         <button type="button" class="btn btn-outline-success" onclick="writeData();">Grabar Cambios</button>
-        <button type="button" class="btn btn-outline-danger">Restaurar</button>
+        <!--<button type="button" class="btn btn-outline-danger">Restaurar</button>-->
       </div>
     </div>
     <div class="container-fluid">
@@ -481,7 +638,9 @@
                   <input type="text" class="form-control" id="f1_ubicacion">
                 </div>
                 <div class="d-flex justify-content-center">
+				  <button type="button" class="btn btn-warning" onclick="searchFinca();">Buscar</button>  
                   <button type="button" class="btn btn-primary" onclick="addFinca();">Guardar</button>  
+				  <button type="button" class="btn btn-danger" onclick="deleteFinca()">Eliminar</button>  
                 </div>
               </form>
             </div>
@@ -527,6 +686,7 @@
                 </div>
                 <div class="d-flex justify-content-center">
                   <button type="button" class="btn btn-primary" onclick="addObrero();">Guardar</button>  
+				  <button type="button" class="btn btn-danger" onclick="deleteObrero()">Eliminar</button>  
                 </div>
               </form>
             </div>
@@ -565,6 +725,7 @@
                 </div>
                 <div class="d-flex justify-content-center">
                   <button type="button" class="btn btn-primary" onclick="addAnimal();">Guardar</button>  
+				  <button type="button" class="btn btn-danger" onclick="deleteAnimal()">Eliminar</button>  
                 </div>
               </form>
             </div>
@@ -605,6 +766,7 @@
                 </div>
                 <div class="d-flex justify-content-center">
                   <button type="button" class="btn btn-primary" onclick="addCultivo();">Guardar</button>  
+				  <button type="button" class="btn btn-danger" onclick="deleteCultivo()">Eliminar</button>  
                 </div>
               </form>
             </div>
